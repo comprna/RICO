@@ -4,6 +4,8 @@ A long-read sequencing–based pipeline to estimate **ribosomal DNA (rDNA) copy 
 
 The pipeline is designed for **Oxford Nanopore Technologies (ONT)** whole-genome sequencing data and supports both **CN estimation** and **DNA methylation analysis**
 
+![workflow](images/rDNA-CN-workflow.png)
+
 ## Overview
 
 This pipeline processes alignment, coverage quantification, and rDNA CN estimation. rDNA CN is calculated by normalizing rDNA coverage against genome-wide SCG coverage.
