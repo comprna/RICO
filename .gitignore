@@ -1,3 +1,39 @@
+# Nextflow
+.nextflow/
+.nextflow.log
+work/
+trace.txt
+timeline.html
+report.html
+dag.html
+
+# Nextflow logs
+.nextflow.log*
+.nextflow/
+work/
+
+# Local data / test data
+ref/
+unaligned_bams/
+results/
+
+# Temporary / scratch
+*.mmi
+*.bam
+*.bam.bai
+*.fastq
+*.fq
+
+# Editor / OS junk
+*~
+*.swp
+.DS_Store
+
+# Logs
+*.log
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
