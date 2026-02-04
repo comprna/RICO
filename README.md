@@ -1,6 +1,6 @@
-# rDNA-CN-pipeline
+# RICO
 
-A long-read sequencing–based pipeline to estimate **ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against **single-copy genes (SCGs)**, with optional **DNA methylation analysis**.
+RICO (**Ri**bosomal DNA **Co**py number) is long-read sequencing–based pipeline for estimating **ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against **single-copy genes (SCGs)**, with optional **DNA methylation analysis**.
 
 The pipeline is designed for **Oxford Nanopore Technologies (ONT)** whole-genome sequencing data and supports both **rDNA CN estimation** and **CpG methylation profiling**.
 
