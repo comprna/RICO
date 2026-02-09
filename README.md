@@ -52,9 +52,11 @@ module load nextflow/25.04.6
 nextflow -version #check
 ```
 
-### Download reference files
+### Download reference files (required)
 
 Human and mouse reference genomes and annotation files are available on Zenodo:
+
+DOI: https://doi.org/10.5281/zenodo.18500657
 
 Download the archive and extract:
 ```
