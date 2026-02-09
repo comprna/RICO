@@ -1,61 +1,72 @@
 # RICO
 
-RICO (**Ri**bosomal DNA **Co**py number) is long-read sequencing–based pipeline for estimating **ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against **single-copy genes (SCGs)**, with optional **DNA methylation analysis**.
+RICO (**Ri**bosomal DNA **Co**py number) is a long-read sequencing–based pipeline for estimating **ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against **single-copy genes (SCGs)**, with **DNA methylation analysis**.
 
 The pipeline is designed for **Oxford Nanopore Technologies (ONT)** whole-genome sequencing data and supports both **rDNA CN estimation** and **CpG methylation profiling**.
 
-![workflow](images/rDNA-CN-workflow.png)
+![workflow](images/rico_workflow.png)
 
 ---
 
 ## Overview
 
-This pipeline performs the following major steps:
+RICO performs the following major steps:
 
 1. Alignment of unaligned ONT BAMs to a custom reference genome containing rDNA repeats  
-2. Coverage quantification over rDNA loci and genome-wide SCGs  
-3. Estimation of rDNA copy number by normalizing rDNA coverage against SCG coverage  
-4. DNA methylation analysis at CpG sites within rDNA regions
+2. Coverage quantification over rDNA loci and curated SCG panel  
+3. Estimation of rDNA CN by normalizing rDNA coverage against SCG coverage  
+4. Extraction of CpG methylation calls within rDNA regions
 
-The workflow is implemented in Nextflow (DSL2) and is optimised for high-performance computing (HPC) environments.
+The workflow is implemented in *Nextflow (DSL2)* and is optimised for *high-performance computing (HPC)* environments.
 
 ---
 
 ## Assumptions and current scope
 
-- The pipeline is currently **designed and tested only on NCI Australia (Gadi)**.
+- RICO is currently **designed and tested only on NCI Australia (Gadi)**.
 - Job submission uses **PBSPro**.
 - Tool paths are specified as absolute paths to ensure reproducibility.
-- The reference genome is currently fixed to a custom rDNA-augmented GRCh38 build.
+- Reference files must be downloaded separately (see below)
 
 ## Tools used in the pipeline
 * Nextflow (25.04.6)
 * Minimap2 (2.30)
+* Samtools (1.23)
 * Bedtools (2.31.1)
 * Modkit (0.6.1)
 
 ---
 
-## Get the pipeline
+## Installation
 
 Clone the repository on Gadi:
 
 ```
-git clone https://github.com/comprna/rDNA-CN-pipeline.git
-cd rDNA-CN-pipeline
+git clone https://github.com/comprna/RICO.git
+cd RICO
 ```
-
-## Set up
 
 Load Nextflow on Gadi
-```
+```bash
 module load nextflow/25.04.6
+nextflow -version #check
 ```
 
-Check that Nextflow is available:
+### Download reference files
+
+Human and mouse reference genomes and annotation files are available on Zenodo:
+
+Download the archive and extract:
 ```
-nextflow -version
+tar -xzf RICO_ref_v1.tar.gz
 ```
+
+> Place the extracted `ref/` directory inside the cloned RICO repository
+
+RICO currently supports
+- Human (GRCh38 + rDNAx5)
+- Mouse (GRCm39 + rDNAx5)
+
 ## Configure project and storage
 
 Edit `nextflow.config` and update the following fields to match your NCI project:
@@ -71,38 +82,59 @@ process {
 
 ## Inputs
 
-### Reference genome
-
-Currently supported reference:
-```
-params.ref = "/g/data/xc17/zaka/res/human/rDNAx5/GRCh38_rDNAx5.fa"
-```
-This reference contains 5 copies of the human rDNA repeat integrated into GRCh38.
-
 ### Unaligned BAMs
 
-Input data are provided via a tab-separated sample sheet (samples.tsv). Each row corresponds to 1 unaligned BAM file, so samples can be processed in parallel.
+Input data are provided via a sample sheet (samples.tsv). 
 
 Example `samples.tsv`:
 ```bash
 file_path
-/g/data/xc17/zaka/nextflow/rDNA-CN-pipeline/unaligned_bams/test.bam
+/g/data/xc17/zaka/nextflow/rDNA-CN-pipeline/unaligned_bams/test.bam 
 ```
+> Replace the file path with your file!
 
 ## Run the pipeline
 
+### Minimum command (default: human, SCG-2)
+
 From the pipeline directory:
 ```
-nextflow run map.nf -config nextflow.config --samplesheet samples.tsv
+nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv
 ```
+
+The results are written to the `results` folder by default.
+
+But you can specify the results directory using `--results_dir`:
+```
+nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv --results_dir /path/to/output
+```
+
+### Other SCGs for human samples
+
+For human samples, three curated SCG panels are provided: `SCG-1`, `SCG-2` (default), `SCG-3`
+Specify using `--scg`, for example:
+```
+nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv --scg 3
+```
+If not specified, `SCG-2` is used.
+
+
+
+### Mouse samples
+
+```
+nextflow run rico.nf --samplesheet samples.tsv --species mouse
+```
+
+For mouse samples, it uses a single curated SCG panel only. The `--scg` parameter is ignored when `--species mouse` is selected.
 
 ## Outputs
 
-For each input BAM, the pipeline produces:
+For each input BAM, RICO produces:
 
 **1. Alignment outputs**
-* `<sample>_GRCh38_rDNAx5.bam`
-* `<sample>_GRCh38_rDNAx5.bam.bai`
+* `<sample>_<reference>.bam`
+* `<sample>_<reference>.bam.bai`
 
 **2. Copy number estimation**
 * Coverage outputs for rDNA and SCGs
