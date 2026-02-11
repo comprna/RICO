@@ -84,12 +84,14 @@ log.info "[params] SCG_bed=${params.SCG_bed}"
 // params.samplesheet  = "/g/data/xc17/zaka/nextflow/RICO/samples.tsv"
 
 //-------------------------------------------------------------------------
-// Tools
+// Tools (paths set in nextflow.config)
 //-------------------------------------------------------------------------
-params.minimap2 = "/g/data/xc17/zaka/lib/minimap2-2.30/minimap2"
-params.samtools = "/g/data/xc17/zaka/lib/samtools-1.23/bin/samtools"
-params.bedtools = "/g/data/xc17/zaka/lib/bedtools-2.31.1/bin/bedtools"
-params.modkit   = "/g/data/xc17/zaka/lib/modkit-0.6.1/modkit"
+params.minimap2 = params.minimap2 ?: "minimap2"
+params.samtools = params.samtools ?: "samtools"
+params.bedtools = params.bedtools ?: "bedtools"
+params.modkit   = params.modkit   ?: "modkit"
+
+
 
 process index {
   tag { genome.baseName }
