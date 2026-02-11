@@ -29,11 +29,15 @@ The workflow is implemented in *Nextflow (DSL2)* and is optimised for *high-perf
 - Reference files must be downloaded separately (see below)
 
 ## Tools used in the pipeline
+
+RICO was developed and tested with the following versions:
 * Nextflow (25.04.6)
 * Minimap2 (2.30)
 * Samtools (1.23)
 * Bedtools (2.31.1)
 * Modkit (0.6.1)
+
+> Users should install these tools on Gadi and ensure they are accessible via absolute paths or environment modules (see configuration section below).
 
 ---
 
@@ -69,7 +73,9 @@ RICO currently supports
 - Human (GRCh38 + rDNAx5)
 - Mouse (GRCm39 + rDNAx5)
 
-## Configure project and storage
+## Configure
+
+### Configure NCI project and storage
 
 Edit `nextflow.config` and update the following fields to match your NCI project:
 ```bash
@@ -80,7 +86,20 @@ process {
 }
 ```
 * project: your NCI project code
-* storage: file systems used by the pipeline (where data and results live)
+* storage: file systems used by the pipeline (where input data and results are stored)
+
+### Configure tool paths
+
+You must install these tools yourself (either via NCI modules, Conda, or local compilation) and update their paths in `rico.nf`:
+```bash
+# Go to the Tools section
+params.minimap2 = "/path/to/minimap2"
+params.samtools = "/path/to/samtools"
+params.bedtools = "/path/to/bedtools"
+params.modkit   = "/path/to/modkit"
+```
+
+> Ensure the versions installed are compatible with those listed in the Tools used section above.
 
 ## Inputs
 
@@ -120,8 +139,6 @@ nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv --scg 3
 ```
 If not specified, `SCG-2` is used.
 
-
-
 ### Mouse samples
 
 ```
@@ -146,7 +163,9 @@ For each input BAM, RICO produces:
 * BedMethyl file
 * Per-read base modification output table for rDNA
 
+## Citation
 
+> Yuen, Leeder, Hannan, Eyras & Hein. Accurate estimation of ribosomal DNA copy number using nanopore long-read sequencing. (Manuscript in preparation)
 
 
 
