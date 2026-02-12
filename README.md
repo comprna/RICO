@@ -21,12 +21,19 @@ The workflow is implemented in *Nextflow (DSL2)* and is optimised for *high-perf
 
 ---
 
-## Assumptions and current scope
+## Execution environment
 
-- RICO is currently **designed and tested only on NCI Australia (Gadi)**.
-- Job submission uses **PBSPro**.
-- Tool paths are specified as absolute paths to ensure reproducibility.
-- Reference files must be downloaded separately (see below)
+RICO is implemented in Nextflow (DSL2) and developed and tested on a PBSPro-based HPC system (NCI Australia, Gadi).
+
+The pipeline currently assumes:
+- A PBSPro scheduler (executor = 'pbspro')
+- HPC-style job submission
+- Tools installed and accessible via absolute paths or environment modules (see below)
+
+Other PBSPro-based HPC systems may work with minimal configuration changes.
+Support for `Slurm` or other schedulers has not yet been tested.
+
+
 
 ## Tools used in the pipeline
 
