@@ -6,6 +6,12 @@ The pipeline is designed for **Oxford Nanopore Technologies (ONT)** whole-genome
 
 ![workflow](images/rico_workflow.png)
 
+
+## Table of contents
+* [Overview](#overview)
+* [Installation](#installation)
+* [How to Use](#how-to-use)
+
 ---
 
 ## Overview
@@ -17,53 +23,64 @@ RICO performs the following major steps:
 3. Estimation of rDNA CN by normalizing rDNA coverage against SCG coverage  
 4. Extraction of CpG methylation calls within rDNA regions
 
-The workflow is implemented in *Nextflow (DSL2)* and is optimised for *high-performance computing (HPC)* environments.
+The workflow is implemented in *Nextflow (DSL2)* and is optimised for *HPC* environments.
 
----
+### Execution environment
 
-## Execution environment
+RICO is implemented in Nextflow (DSL2).
+It is developed and tested on a PBSPro-based HPC system ([NCI Australia](https://nci.org.au/)).
 
-RICO is implemented in Nextflow (DSL2) and developed and tested on a PBSPro-based HPC system (NCI Australia, Gadi).
+**UPDATE (April 2026):** 
+- **RICO now supports execution using Singularity containers**
+- **This means all required software dependencies are provided**
 
 The pipeline currently assumes:
 - A PBSPro scheduler (executor = 'pbspro')
 - HPC-style job submission
-- Tools installed and accessible via absolute paths or environment modules (see below)
+- Singularity available on the system (`module load singularity` on Gadi)
 
 Other PBSPro-based HPC systems may work with minimal configuration changes.
 Support for `Slurm` or other schedulers has not yet been tested.
 
+### Tools used in the pipeline
 
-
-## Tools used in the pipeline
-
-RICO was developed and tested with the following versions:
+RICO was developed and tested with the following versions (bundled in the container image):
 * Nextflow (25.04.6)
 * Minimap2 (2.30)
 * Samtools (1.23)
 * Bedtools (2.31.1)
 * Modkit (0.6.1)
 
-> Users should install these tools on Gadi and ensure they are accessible via absolute paths or environment modules (see configuration section below).
+> When using the Singularity container, manual installation of these tools is no longer required.
 
 ---
 
 ## Installation
 
-Clone the repository on Gadi:
+### 1. Clone the repository on Gadi:
 
 ```
 git clone https://github.com/comprna/RICO.git
 cd RICO
 ```
 
-Load Nextflow on Gadi
+### 2. Load Nextflow and singularity on Gadi
+
 ```bash
 module load nextflow/25.04.6
+module load singularity
 nextflow -version #check
 ```
 
-### Download reference files (required)
+### 3. Pull the Singularity container
+
+```bash
+mkdir -p /path/to/containers
+singularity pull /path/to/containers/rico_2026.03.sif docker://zakayuen/rico:2026.03
+```
+> Replace `/path/to/containers` with your preferred location (e.g. /g/data/.../containers)
+
+### 4. Download reference files
 
 Human and mouse reference genomes and annotation files are available on Zenodo:
 
@@ -80,61 +97,48 @@ RICO currently supports
 - Human (GRCh38 + rDNAx5)
 - Mouse (GRCm39 + rDNAx5)
 
-## Configure
+### 5. Configure NCI project, storage, and mirror path
 
-### Configure NCI project and storage
-
-Edit `nextflow.config` and update the following fields to match your NCI project:
+Edit `nextflow.config` and update the following fields:
 ```bash
-process {
-  executor = 'pbspro'
-  project  = 'jd21' # replace with your NCI project
-  storage  = 'gdata/jd21+scratch/jd21+gdata/xc17' # replace with your NCI project
-}
+params {
+  project   = 'jd21'
+  storage   = 'gdata/jd21+scratch/jd21+gdata/xc17+gdata/qq78'
+  container = '/g/data/xc17/zaka/containers/rico_2026.03.sif'
+...
 ```
 * project: your NCI project code
 * storage: file systems used by the pipeline (where input data and results are stored)
+* container: /path/to/containers/rico_2026.03.sif
 
-### Configure tool paths
+---
 
-You must install these tools yourself (either via NCI modules, Conda, or local compilation) and update their paths in `rico.nf`:
-```bash
-# Go to the Tools section
-params.minimap2 = "/path/to/minimap2"
-params.samtools = "/path/to/samtools"
-params.bedtools = "/path/to/bedtools"
-params.modkit   = "/path/to/modkit"
-```
+## How to use
 
-> Ensure the versions installed are compatible with those listed in the Tools used section above.
+### Input - unaligned BAM
 
-## Inputs
+Path to your input BAM needs to be provided in `samples.tsv`:
 
-### Unaligned BAMs
-
-Input data are provided via a sample sheet (samples.tsv). 
-
-Example `samples.tsv`:
 ```bash
 file_path
-/g/data/xc17/zaka/nextflow/rDNA-CN-pipeline/unaligned_bams/test.bam 
+/path/to/your.bam 
 ```
-> Replace the file path with your file!
-
-## Run the pipeline
 
 ### Minimum command (default: human, SCG-2)
 
-From the pipeline directory:
+From the RICO directory:
 ```
-nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv
+nextflow run rico.nf \
+ --samplesheet samples.tsv
 ```
 
 The results are written to the `results` folder by default.
 
-But you can specify the results directory using `--results_dir`:
+But you can specify the results directory using `--out_dir`:
 ```
-nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv --results_dir /path/to/output
+nextflow run rico.nf \
+ --samplesheet samples.tsv \
+ --out_dir /path/to/output
 ```
 
 ### Other SCGs for human samples
@@ -142,14 +146,18 @@ nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv --results
 For human samples, three curated SCG panels are provided: `SCG-1`, `SCG-2` (default), `SCG-3`
 Specify using `--scg`, for example:
 ```
-nextflow run rico.nf -config nextflow.config --samplesheet samples.tsv --scg 3
+nextflow run rico.nf \
+ --samplesheet samples.tsv \
+ --scg 3
 ```
 If not specified, `SCG-2` is used.
 
 ### Mouse samples
 
 ```
-nextflow run rico.nf --samplesheet samples.tsv --species mouse
+nextflow run rico.nf \
+ --samplesheet samples.tsv \
+ --species mouse
 ```
 
 For mouse samples, it uses a single curated SCG panel only. The `--scg` parameter is ignored when `--species mouse` is selected.

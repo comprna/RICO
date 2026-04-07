@@ -16,6 +16,7 @@ work/
 ref/
 unaligned_bams/
 results/
+result_test*/
 
 # Temporary / scratch
 *.mmi

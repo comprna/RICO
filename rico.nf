@@ -84,7 +84,7 @@ log.info "[params] SCG_bed=${params.SCG_bed}"
 // params.samplesheet  = "/g/data/xc17/zaka/nextflow/RICO/samples.tsv"
 
 //-------------------------------------------------------------------------
-// Tools (paths set in nextflow.config)
+// Tools (paths now provided from container PATH )
 //-------------------------------------------------------------------------
 params.minimap2 = params.minimap2 ?: "minimap2"
 params.samtools = params.samtools ?: "samtools"
