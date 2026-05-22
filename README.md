@@ -1,16 +1,17 @@
 # RICO
 
-RICO (**Ri**bosomal DNA **Co**py number) is a long-read sequencing–based pipeline for estimating **ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against **single-copy genes (SCGs)**, with **DNA methylation analysis**.
+RICO (**Ri**bosomal DNA **Co**py number) is a long-read sequencing–based pipeline for **estimating ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against single-copy genes (SCGs), with **DNA methylation analysis**.
 
-The pipeline is designed for **Oxford Nanopore Technologies (ONT)** whole-genome sequencing data and supports both **rDNA CN estimation** and **CpG methylation profiling**.
+RICO is designed for Oxford Nanopore Technologies (ONT) whole-genome sequencing data and supports both rDNA CN estimation and CpG methylation profiling.
 
 ![workflow](images/rico_workflow.png)
 
 
 ## Table of contents
 * [Overview](#overview)
-* [Installation](#installation)
-* [How to Use](#how-to-use)
+* [Running RICO on NCI](#running-rico-on-nci)
+* [Running RICO locally](#running-rico-locally)
+* [Outputs](#outputs)
 
 ---
 
@@ -23,9 +24,11 @@ RICO performs the following major steps:
 3. Estimation of rDNA CN by normalizing rDNA coverage against SCG coverage  
 4. Extraction of CpG methylation calls within rDNA regions
 
-The workflow is implemented in *Nextflow (DSL2)* and is optimised for *HPC* environments.
+RICO is implemented in *Nextflow (DSL2)* and is optimised for *HPC* environments.
 
-### Execution environment
+RICO also provides a *standalone bash workflow* (`rico_local.sh`) for users who do not have access to NCI or a Nextflow/HPC environment.
+
+## Running RICO on NCI
 
 RICO is implemented in Nextflow (DSL2).
 It is developed and tested on a PBSPro-based HPC system ([NCI Australia](https://nci.org.au/)).
@@ -55,16 +58,16 @@ RICO was developed and tested with the following versions (bundled in the contai
 
 ---
 
-## Installation
+### Installation
 
-### 1. Clone the repository on Gadi:
+#### 1. Clone the repository on Gadi:
 
 ```
 git clone https://github.com/comprna/RICO.git
 cd RICO
 ```
 
-### 2. Load Nextflow and singularity on Gadi
+#### 2. Load Nextflow and singularity on Gadi
 
 ```bash
 module load nextflow/25.04.6
@@ -72,7 +75,7 @@ module load singularity
 nextflow -version #check
 ```
 
-### 3. Pull the Singularity container
+#### 3. Pull the Singularity container
 
 ```bash
 mkdir -p /path/to/containers
@@ -80,7 +83,7 @@ singularity pull /path/to/containers/rico_2026.03.sif docker://zakayuen/rico:202
 ```
 > Replace `/path/to/containers` with your preferred location (e.g. /g/data/.../containers)
 
-### 4. Download reference files
+#### 4. Download reference files
 
 Human and mouse reference genomes and annotation files are available on Zenodo:
 
@@ -97,7 +100,7 @@ RICO currently supports
 - Human (GRCh38 + rDNAx5)
 - Mouse (GRCm39 + rDNAx5)
 
-### 5. Configure NCI project, storage, and mirror path
+#### 5. Configure NCI project, storage, and mirror path
 
 Edit `nextflow.config` and update the following fields:
 ```bash
@@ -113,9 +116,9 @@ params {
 
 ---
 
-## How to use
+### How to use
 
-### Input - unaligned BAM
+#### Input - unaligned BAM
 
 Path to your input BAM needs to be provided in `samples.tsv`:
 
@@ -124,7 +127,7 @@ file_path
 /path/to/your.bam 
 ```
 
-### Minimum command (default: human, SCG-2)
+#### Minimum command (default: human, SCG-2)
 
 From the RICO directory:
 ```
@@ -141,7 +144,7 @@ nextflow run rico.nf \
  --out_dir /path/to/output
 ```
 
-### Other SCGs for human samples
+#### Other SCGs for human samples
 
 For human samples, three curated SCG panels are provided: `SCG-1`, `SCG-2` (default), `SCG-3`
 Specify using `--scg`, for example:
@@ -152,7 +155,7 @@ nextflow run rico.nf \
 ```
 If not specified, `SCG-2` is used.
 
-### Mouse samples
+#### Mouse samples
 
 ```
 nextflow run rico.nf \
@@ -162,9 +165,94 @@ nextflow run rico.nf \
 
 For mouse samples, it uses a single curated SCG panel only. The `--scg` parameter is ignored when `--species mouse` is selected.
 
+---
+
+## Running RICO locally 
+
+**UPDATE (May 2026):** 
+- **RICO can now be run directly from the command line on a local workstation or server**
+- **This reproduces the main RICO workflow without requiring Nextflow or HPC job scheduling**
+
+### Installation
+
+#### 1. Follow steps 1 and 4 from the "Running on NCI" installation section
+
+#### 2. Prepare input samplesheet
+
+Provide paths to unaligned ONT BAM files in `samples.tsv`:
+
+```bash
+file_path
+/path/to/your.bam 
+```
+
+> Make sure your unaligned ONT BAM file contains MM/ML base modification tags.
+
+#### 3. Install tools on your end
+
+The following tools must be installed and accessible on your system:
+
+* Minimap2 (2.30)
+* Samtools (1.23)
+* Bedtools (2.31.1)
+* Modkit (0.6.1)
+
+Edit the tool paths at the following section from `rico_local.sh`.
+
+```
+# -------------------------
+# Tool paths (replace with your tool paths after installing)
+# -------------------------
+MINIMAP2="/g/data/xc17/zaka/lib/minimap2-2.30/minimap2"
+SAMTOOLS="/g/data/xc17/zaka/lib/samtools-1.23/bin/samtools"
+BEDTOOLS="/g/data/xc17/zaka/lib/bedtools-2.31.1/bin/bedtools"
+MODKIT="/g/data/xc17/zaka/lib/modkit-0.6.1/modkit"
+```
+
+### Running RICO locally
+
+```bash
+./rico_local.sh --help
+
+Usage:
+  bash rico_local.sh --samplesheet samples.tsv --outdir results [options]
+
+Required:
+  --samplesheet FILE       Tab-delimited samplesheet with a file_path column
+
+Options:
+  --species human|mouse    Default: human
+  --scg 1|2|3              Human SCG panel. Default: 2. Ignored for mouse sample
+  --outdir DIR             Default: results
+  --threads N              Default: 4
+  --sort-mem SIZE          Memory per samtools sort thread. (Default: 2G)
+  --force                  Re-run steps even if output files already exist. (Default: false)
+  -h, --help               help message
+
+Example:
+  bash rico_local.sh --samplesheet samples.tsv --species human --scg 2 --outdir result_sampleX --threads 8
+```
+
+#### Default run (human, SCG-2):
+
+```bash
+./rico_local.sh \
+ --samplesheet samples.tsv 
+```
+
+#### Mouse samples
+
+```bash
+./rico_local.sh \
+  --samplesheet samples.tsv \
+  --species mouse \
+  --outdir results_mouse \
+  --threads 8
+```
+
 ## Outputs
 
-For each input BAM, RICO produces:
+For each input BAM, both the Nextflow and standalone bash workflows produce:
 
 **1. Alignment outputs**
 * `<sample>_<reference>.bam`
@@ -180,7 +268,4 @@ For each input BAM, RICO produces:
 
 ## Citation
 
-> Yuen, Leeder, Hannan, Eyras & Hein. Accurate estimation of ribosomal DNA copy number using nanopore long-read sequencing. (Manuscript in preparation)
-
-
-
+> Yuen, Leeder, Udumanne, Hannan, Eyras & Hein. Accurate estimation of ribosomal DNA copy number using nanopore long-read sequencing. (Manuscript in preparation)
