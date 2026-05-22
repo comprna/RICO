@@ -33,6 +33,10 @@ result_test*/
 # Logs
 *.log
 
+# internal testing for local run
+run.pbs
+RICO_local.e*
+RICO_local.o*
 
 
 # Byte-compiled / optimized / DLL files
@@ -242,3 +246,4 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
