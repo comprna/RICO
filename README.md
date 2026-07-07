@@ -1,6 +1,6 @@
 # RICO
 
-RICO (**Ri**bosomal DNA **Co**py number) is a long-read sequencing–based pipeline for **estimating ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against single-copy genes (SCGs), with **DNA methylation analysis**.
+RICO (**R**ibosomal DNA **I**ntegrated **Co**py Number and Methylation Analysis) is a long-read sequencing–based pipeline for **estimating ribosomal DNA (rDNA) copy number (CN)** using coverage normalization against single-copy genes (SCGs), with **DNA methylation analysis**.
 
 RICO is designed for Oxford Nanopore Technologies (ONT) whole-genome sequencing data and supports both rDNA CN estimation and CpG methylation profiling.
 
