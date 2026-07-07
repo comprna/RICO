@@ -137,11 +137,11 @@ nextflow run rico.nf \
 
 The results are written to the `results` folder by default.
 
-But you can specify the results directory using `--out_dir`:
+But you can specify the results directory using `--outdir`:
 ```
 nextflow run rico.nf \
  --samplesheet samples.tsv \
- --out_dir /path/to/output
+ --outdir /path/to/output
 ```
 
 #### Other SCGs for human samples
@@ -268,4 +268,7 @@ For each input BAM, both the Nextflow and standalone bash workflows produce:
 
 ## Citation
 
-> Yuen, Leeder, Udumanne, Hannan, Eyras & Hein. Accurate estimation of ribosomal DNA copy number using nanopore long-read sequencing. (Manuscript in preparation)
+> Yuen Z, Leeder N, Udumanne T, Garvie A, Wong L, Weiss E, van Loon L, Ganley A, Hannan R, Eyras E, Hein N.  
+**Integrated analysis of ribosomal DNA copy number and methylation using nanopore long-read sequencing.**  
+bioRxiv (2026).  
+doi: https://doi.org/10.64898/2026.07.05.736662
